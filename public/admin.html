@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة الإدارة</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>لوحة الإدارة</h1>
+      <div class="actions">
+        <a class="btn ghost" href="/">الرجوع للموقع</a>
+        <form method="post" action="/admin/logout" style="display:inline">
+          <button class="btn danger" type="submit">خروج</button>
+        </form>
+      </div>
+    </header>
+
+    <section class="card">
+      <div id="status"></div>
+    </section>
+
+    <section class="card">
+      <h3>الطلبات</h3>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>الاسم</th><th>الهاتف</th><th>الخدمة</th><th>ملاحظة</th><th>الوقت</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
