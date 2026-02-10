@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>لوحة الإدارة - أشير</title>
+
+<style>
+
+body{
+background:#020617;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+
+.box{
+background:#0f172a;
+padding:20px;
+border-radius:10px;
+margin-top:20px;
+}
+
+h2{
+color:#22c55e;
+}
+
+table{
+width:100%;
+margin-top:15px;
+border-collapse:collapse;
+}
+
+td,th{
+padding:10px;
+border-bottom:1px solid #1e293b;
+}
+
+</style>
+
+</head>
+<body>
+
+<h2>لوحة إدارة منصة أشير</h2>
+
+<div class="box">
+
+<table>
+
+<thead>
+<tr>
+<th>الاسم</th>
+<th>الهاتف</th>
+<th>الخدمة</th>
+<th>الوقت</th>
+</tr>
+</thead>
+
+<tbody id="orders">
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+fetch("/api/orders")
+.then(res=>res.json())
+.then(data=>{
+
+let html="";
+
+data.forEach(o=>{
+
+html+=`
+<tr>
+<td>${o.name}</td>
+<td>${o.phone}</td>
+<td>${o.service}</td>
+<td>${o.date}</td>
+</tr>
+`;
+
+});
+
+document.getElementById("orders").innerHTML=html;
+
+});
+
+</script>
+
+</body>
+</html>
