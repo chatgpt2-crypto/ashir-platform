@@ -1,8 +1,6 @@
-function requireAuth(req,res,next){
-if(!req.session.user){
-return res.redirect("/admin/login");
-}
-next();
+function requireAuth(req, res, next) {
+  if (req.session && req.session.user && req.session.user.role === "admin") return next();
+  return res.redirect("/admin/login");
 }
 
-module.exports = {requireAuth};
+module.exports = { requireAuth };
