@@ -1,128 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>منصة أشير</title>
-
-<style>
-
-body{
-    margin:0;
-    font-family:Arial;
-    background:linear-gradient(135deg,#0f172a,#020617);
-    color:white;
-}
-
-.container{
-    max-width:500px;
-    margin:40px auto;
-    background:#0f172a;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-
-h1{
-    text-align:center;
-    color:#22c55e;
-}
-
-input,select,textarea{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:8px;
-    border:none;
-    background:#020617;
-    color:white;
-}
-
-button{
-    width:100%;
-    padding:15px;
-    margin-top:15px;
-    border:none;
-    border-radius:8px;
-    background:#22c55e;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#16a34a;
-}
-
-.admin{
-    text-align:center;
-    margin-bottom:15px;
-}
-
-.admin a{
-    color:#22c55e;
-    text-decoration:none;
-}
-
-</style>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>منصة أشير</title>
+  <style>
+    body{margin:0;font-family:system-ui;background:#0b1220;color:#fff}
+    .wrap{max-width:900px;margin:auto;padding:24px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
+    h1{margin:0 0 6px}
+    p{margin:0 0 14px;color:rgba(255,255,255,.75)}
+    label{display:block;margin:10px 0 6px;color:rgba(255,255,255,.85)}
+    input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;outline:none}
+    textarea{min-height:100px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:700px){.row{grid-template-columns:1fr}}
+    .btns{display:flex;gap:10px;justify-content:flex-start;margin-top:12px;flex-wrap:wrap}
+    button,a.btn{padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
+    button{background:#17c964;color:#06250f}
+    a.btn{background:transparent;border:1px solid rgba(255,255,255,.20);color:#fff;text-decoration:none}
+    .small{font-size:13px;color:rgba(255,255,255,.65);margin-top:10px}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card">
+      <h1>منصة أشير</h1>
+      <p>واجهة احترافية لطلب الخدمات — بعد الإرسال سيتم فتح واتساب تلقائياً ✅</p>
 
-<div class="container">
+      <form id="orderForm">
+        <div class="row">
+          <div>
+            <label>الاسم</label>
+            <input id="name" placeholder="مثال: أحمد" required />
+          </div>
+          <div>
+            <label>الهاتف</label>
+            <input id="phone" placeholder="مثال: 0550xxxxxx" required />
+          </div>
+        </div>
 
-<div class="admin">
-<a href="/admin.html">دخول الإدارة</a>
-</div>
+        <label>الخدمة</label>
+        <select id="service" required>
+          <option value="">اختر خدمة...</option>
+          <option>خدمات توصيل</option>
+          <option>صيانة وخدمات</option>
+          <option>خدمات فلاحية</option>
+        </select>
 
-<h1>منصة أشير</h1>
+        <label>ملاحظة (اختياري)</label>
+        <textarea id="note" placeholder="اكتب التفاصيل..."></textarea>
 
-<form id="orderForm">
+        <div class="btns">
+          <button type="submit">إرسال الطلب</button>
+          <a class="btn" href="/dashboard.html" target="_blank">دخول الإدارة</a>
+        </div>
 
-<input type="text" name="name" placeholder="الاسم" required>
-
-<input type="text" name="phone" placeholder="رقم الهاتف" required>
-
-<select name="service">
-<option>خدمات توصيل</option>
-<option>خدمات فلاحية</option>
-<option>صيانة</option>
-<option>خدمات أخرى</option>
-</select>
-
-<textarea name="details" placeholder="تفاصيل إضافية"></textarea>
-
-<button type="submit">إرسال الطلب</button>
-
-</form>
-
-</div>
+        <div class="small">
+          ملاحظة: الطلب يُحفظ في السيرفر ويظهر في لوحة الإدارة + يتم فتح واتساب تلقائياً.
+        </div>
+      </form>
+    </div>
+  </div>
 
 <script>
+  const WHATSAPP_NUMBER = "213666376417"; // رقمك دولي بدون +
 
-document.getElementById("orderForm").addEventListener("submit", function(e){
+  document.getElementById("orderForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const service = document.getElementById("service").value.trim();
+    const note = document.getElementById("note").value.trim();
 
-let name = document.querySelector("input[name=name]").value;
-let phone = document.querySelector("input[name=phone]").value;
-let service = document.querySelector("select[name=service]").value;
-let details = document.querySelector("textarea[name=details]").value;
+    if (!name || !phone || !service) {
+      alert("يرجى ملء الاسم والهاتف والخدمة");
+      return;
+    }
 
-let message =
-"طلب جديد من منصة أشير:%0A"+
-"الاسم: "+name+"%0A"+
-"الهاتف: "+phone+"%0A"+
-"الخدمة: "+service+"%0A"+
-"التفاصيل: "+details;
+    // 1) حفظ الطلب في السيرفر
+    let saved = false;
+    try {
+      const r = await fetch("/api/order", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ name, phone, service, note })
+      });
+      const data = await r.json();
+      saved = !!data.success;
+    } catch (err) {
+      saved = false;
+    }
 
-let url = "https://wa.me/213666376417?text="+message;
+    if (!saved) {
+      alert("تعذر حفظ الطلب في السيرفر ❌ افتح Logs في Render لمعرفة السبب.");
+      return;
+    }
 
-window.open(url,"_blank");
+    // 2) فتح واتساب تلقائياً بعد الحفظ
+    const msg =
+      `طلب جديد من منصة أشير\n` +
+      `الاسم: ${name}\n` +
+      `الهاتف: ${phone}\n` +
+      `الخدمة: ${service}\n` +
+      `ملاحظة: ${note || "-"}`;
 
-});
+    const wa = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(wa, "_blank");
 
+    e.target.reset();
+    alert("تم إرسال الطلب ✅ ستجده في لوحة الإدارة.");
+  });
 </script>
-
 </body>
 </html>
