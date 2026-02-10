@@ -1,42 +1,81 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>لوحة الإدارة</title>
-  <link rel="stylesheet" href="/style.css" />
+<meta charset="UTF-8">
+<title>دخول الإدارة</title>
+
+<style>
+body{
+background:#020617;
+color:white;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:#0f172a;
+padding:30px;
+border-radius:10px;
+width:300px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#020617;
+border:none;
+color:white;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:15px;
+background:#22c55e;
+border:none;
+color:white;
+cursor:pointer;
+}
+</style>
+
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <h1>لوحة الإدارة</h1>
-      <div class="actions">
-        <a class="btn ghost" href="/">الرجوع للموقع</a>
-        <form method="post" action="/admin/logout" style="display:inline">
-          <button class="btn danger" type="submit">خروج</button>
-        </form>
-      </div>
-    </header>
 
-    <section class="card">
-      <div id="status"></div>
-    </section>
+<div class="box">
 
-    <section class="card">
-      <h3>الطلبات</h3>
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>الاسم</th><th>الهاتف</th><th>الخدمة</th><th>ملاحظة</th><th>الوقت</th>
-            </tr>
-          </thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
+<h3>تسجيل دخول الإدارة</h3>
 
-  <script src="/admin.js"></script>
+<input id="user" placeholder="اسم المستخدم">
+<input id="pass" placeholder="كلمة المرور" type="password">
+
+<button onclick="login()">دخول</button>
+
+</div>
+
+<script>
+
+function login(){
+
+let u=document.getElementById("user").value;
+let p=document.getElementById("pass").value;
+
+if(u==="admin" && p==="123456"){
+
+window.location="/dashboard.html";
+
+}else{
+
+alert("بيانات غير صحيحة");
+
+}
+
+}
+
+</script>
+
 </body>
 </html>
