@@ -1,50 +1,128 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Achir Platform</title>
-  <link rel="stylesheet" href="/style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة أشير</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(135deg,#0f172a,#020617);
+    color:white;
+}
+
+.container{
+    max-width:500px;
+    margin:40px auto;
+    background:#0f172a;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+h1{
+    text-align:center;
+    color:#22c55e;
+}
+
+input,select,textarea{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:none;
+    background:#020617;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:15px;
+    border:none;
+    border-radius:8px;
+    background:#22c55e;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#16a34a;
+}
+
+.admin{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.admin a{
+    color:#22c55e;
+    text-decoration:none;
+}
+
+</style>
+
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <h1 id="title">Achir Platform</h1>
-      <div class="actions">
-        <a class="btn ghost" href="/admin/login">دخول الإدارة</a>
-      </div>
-    </header>
 
-    <section class="hero">
-      <div class="card">
-        <h2>واجهة احترافية لطلب الخدمات</h2>
-        <p>بعد الإرسال يصلك رابط واتساب مباشر، وتصل إشعارات لصاحب المنصة في تيليجرام (اختياري).</p>
-      </div>
-    </section>
+<div class="container">
 
-    <section class="card">
-      <h3>طلب خدمة</h3>
-      <form id="orderForm">
-        <div class="grid">
-          <label>الاسم<input name="customer_name" required placeholder="مثال: أحمد"></label>
-          <label>الهاتف<input name="phone" required placeholder="0550xxxxxx"></label>
-          <label>الخدمة
-            <select name="service_id" id="services" required></select>
-          </label>
-        </div>
-        <label>ملاحظة إضافية (اختياري)
-          <textarea name="note" placeholder="اكتب التفاصيل..."></textarea>
-        </label>
-        <div class="row">
-          <button class="btn" type="submit">إرسال الطلب</button>
-          <span id="msg"></span>
-        </div>
-      </form>
-    </section>
+<div class="admin">
+<a href="/admin.html">دخول الإدارة</a>
+</div>
 
-    <footer class="foot">© منصة أشير — تصميم حديث متوافق مع الهاتف والويب</footer>
-  </div>
+<h1>منصة أشير</h1>
 
-  <script src="/app.js"></script>
+<form id="orderForm">
+
+<input type="text" name="name" placeholder="الاسم" required>
+
+<input type="text" name="phone" placeholder="رقم الهاتف" required>
+
+<select name="service">
+<option>خدمات توصيل</option>
+<option>خدمات فلاحية</option>
+<option>صيانة</option>
+<option>خدمات أخرى</option>
+</select>
+
+<textarea name="details" placeholder="تفاصيل إضافية"></textarea>
+
+<button type="submit">إرسال الطلب</button>
+
+</form>
+
+</div>
+
+<script>
+
+document.getElementById("orderForm").addEventListener("submit", function(e){
+
+e.preventDefault();
+
+let name = document.querySelector("input[name=name]").value;
+let phone = document.querySelector("input[name=phone]").value;
+let service = document.querySelector("select[name=service]").value;
+let details = document.querySelector("textarea[name=details]").value;
+
+let message =
+"طلب جديد من منصة أشير:%0A"+
+"الاسم: "+name+"%0A"+
+"الهاتف: "+phone+"%0A"+
+"الخدمة: "+service+"%0A"+
+"التفاصيل: "+details;
+
+let url = "https://wa.me/213666376417?text="+message;
+
+window.open(url,"_blank");
+
+});
+
+</script>
+
 </body>
 </html>
