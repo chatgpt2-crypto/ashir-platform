@@ -1,83 +1,302 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Achir Platform</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منصة أشير</title>
   <style>
-    body{font-family:Arial;margin:0;background:#0b1220;color:#fff}
-    .wrap{max-width:900px;margin:auto;padding:18px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;margin:12px 0}
-    input,button{font:inherit;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff}
-    button{cursor:pointer}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media(max-width:720px){.row{grid-template-columns:1fr}}
-    a{color:#9ae6b4}
-    .ok{padding:10px;border-radius:12px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.25);margin-top:10px;display:none}
-    .err{padding:10px;border-radius:12px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);margin-top:10px;display:none}
+    :root{
+      --bg:#0b1220;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:rgba(229,231,235,.75);
+      --brand:#22c55e;
+      --brand2:#60a5fa;
+      --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:
+      radial-gradient(900px 500px at 80% 10%, rgba(34,197,94,.20), transparent 60%),
+      radial-gradient(900px 500px at 10% 30%, rgba(96,165,250,.18), transparent 60%),
+      var(--bg);
+      color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Arial;
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:auto;padding:18px}
+    .top{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      position:sticky;top:0;background:linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.55));
+      backdrop-filter: blur(10px);
+      padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);
+      z-index:10;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:40px;height:40px;border-radius:14px;
+      background:linear-gradient(135deg, rgba(34,197,94,.9), rgba(96,165,250,.85));
+      box-shadow:0 10px 26px rgba(34,197,94,.18);
+    }
+    .brand h1{font-size:18px;margin:0}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{
+      padding:10px 12px;border-radius:999px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+      font-size:13px;
+    }
+    .pill:hover{border-color:rgba(255,255,255,.18);color:var(--text)}
+    .hero{
+      display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:stretch;
+      margin-top:14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .heroMain{padding:18px}
+    .kicker{display:inline-flex;gap:8px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      background:rgba(34,197,94,.10);
+      border:1px solid rgba(34,197,94,.22);
+      color:#bbf7d0;font-size:13px;
+    }
+    .title{margin:12px 0 0;font-size:34px;line-height:1.15}
+    .sub{margin:10px 0 0;color:var(--muted);line-height:1.7}
+    .ctaRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btn{
+      padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;
+      font-weight:650;
+    }
+    .btnPrimary{
+      background:linear-gradient(135deg, rgba(34,197,94,.9), rgba(34,197,94,.65));
+      border-color:rgba(34,197,94,.35);
+      box-shadow:0 12px 24px rgba(34,197,94,.18);
+    }
+    .btnPrimary:hover{filter:brightness(1.05)}
+    .btnGhost:hover{border-color:rgba(255,255,255,.22)}
+    .heroSide{padding:18px}
+    .statGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .stat{
+      padding:12px;border-radius:14px;background:rgba(255,255,255,.04);
+     emq border:1px solid rgba(255,255,255,.10);
+    }
+    .stat b{display:block;font-size:18px}
+    .stat span{display:block;margin-top:6px;color:var(--muted);font-size:13px}
+    .section{margin-top:16px;padding:18px}
+    .section h2{margin:0 0 12px;font-size:18px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .feat{
+      padding:14px;border-radius:16px;background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      min-height:110px;
+    }
+    .feat .ic{
+      width:38px;height:38px;border-radius:14px;
+      background:rgba(96,165,250,.14);
+      border:1px solid rgba(96,165,250,.22);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:10px;
+    }
+    .feat h3{margin:0;font-size:15px}
+    .feat p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
+    .form{
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;
+    }
+    label{font-size:13px;color:var(--muted)}
+    input,select,textarea{
+      width:100%;margin-top:6px;padding:12px 12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.22);
+      color:var(--text);outline:none;
+    }
+    textarea{grid-column:1/-1;min-height:110px;resize:vertical}
+    .formActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .note{color:var(--muted);font-size:13px;line-height:1.6;margin-top:10px}
+    .toast{
+      margin-top:12px;padding:12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      display:none;
+    }
+    .toast.ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10)}
+    .toast.err{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.10)}
+    footer{padding:22px 18px;color:var(--muted);text-align:center}
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      .form{grid-template-columns:1fr}
+      .title{font-size:28px}
+      .top{position:relative}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1 style="margin:0 0 6px">Achir Platform</h1>
-      <p style="opacity:.8;margin:0">إرسال طلب (سيصل للإدارة، وواتساب إذا فعلته)</p>
-      <p style="margin-top:8px"><a href="/admin/login">لوحة الإدارة</a></p>
+
+  <div class="top">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>منصة أشير</h1>
+        <div style="font-size:12px;color:var(--muted)">حلول رقمية لطلباتك وخدماتك</div>
+      </div>
     </div>
-
-    <div class="card">
-      <form id="form">
-        <div class="row">
-          <input id="name" placeholder="الاسم" required />
-          <input id="phone" placeholder="الهاتف" required />
-        </div>
-        <div style="margin-top:10px">
-          <input id="service" placeholder="الخدمة / الطلب" required style="width:100%"/>
-        </div>
-
-        <div style="margin-top:10px">
-          <button type="submit">إرسال</button>
-        </div>
-
-        <div class="ok" id="ok">✅ تم إرسال الطلب بنجاح.</div>
-        <div class="err" id="err">❌ حدث خطأ. حاول مرة أخرى.</div>
-      </form>
+    <div class="nav">
+      <a class="pill" href="#services">الخدمات</a>
+      <a class="pill" href="#order">طلب خدمة</a>
+      <a class="pill" href="/admin/login">لوحة الإدارة</a>
     </div>
   </div>
 
-<script>
-const form = document.getElementById("form");
-const ok = document.getElementById("ok");
-const err = document.getElementById("err");
+  <div class="wrap">
+    <div class="hero">
+      <div class="card heroMain">
+        <div class="kicker">⚡ تشغيل سريع • لوحة إدارة • حفظ الطلبات</div>
+        <h2 class="title">واجهة احترافية لطلب الخدمات في منصة أشير</h2>
+        <p class="sub">
+          قدّم طلبك في ثواني، وسيظهر مباشرة في لوحة الإدارة. تصميم عصري متجاوب مع الهاتف والويب.
+        </p>
+        <div class="ctaRow">
+          <a class="btn btnPrimary" href="#order">اطلب الآن</a>
+          <a class="btn btnGhost" href="/admin/login">دخول الإدارة</a>
+        </div>
+      </div>
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  ok.style.display = "none";
-  err.style.display = "none";
+      <div class="card heroSide">
+        <div class="statGrid">
+          <div class="stat"><b>سهل</b><span>نموذج طلب واضح وسريع</span></div>
+          <div class="stat"><b>آمن</b><span>جلسة تسجيل للإدارة</span></div>
+          <div class="stat"><b>مباشر</b><span>الطلبات تُحفظ تلقائياً</span></div>
+          <div class="stat"><b>موبايل</b><span>تصميم متجاوب بالكامل</span></div>
+        </div>
+        <div class="note">ملاحظة: يمكنك ربط إشعارات واتساب Cloud API لاحقاً.</div>
+      </div>
+    </div>
 
-  const payload = {
-    name: document.getElementById("name").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    service: document.getElementById("service").value.trim()
-  };
+    <div id="services" class="card section">
+      <h2>الخدمات المتاحة</h2>
+      <div class="grid">
+        <div class="feat">
+          <div class="ic">🚚</div>
+          <h3>خدمات توصيل</h3>
+          <p>طلبات توصيل داخل المدينة مع متابعة بسيطة.</p>
+        </div>
+        <div class="feat">
+          <div class="ic">🛠️</div>
+          <h3>صيانة وخدمات</h3>
+          <p>حجز خدمة صيانة أو دعم تقني بسرعة.</p>
+        </div>
+        <div class="feat">
+          <div class="ic">🌾</div>
+          <h3>خدمات فلاحية</h3>
+          <p>طلب كراء معدات أو خدمات ميدانية.</p>
+        </div>
+      </div>
+    </div>
 
-  try{
-    const r = await fetch("/api/order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const j = await r.json();
-    if(j.ok){
-      ok.style.display = "block";
-      form.reset();
-      return;
+    <div id="order" class="card section">
+      <h2>طلب خدمة</h2>
+
+      <form id="orderForm" class="form">
+        <div>
+          <label>الاسم</label>
+          <input name="name" placeholder="مثال: أحمد" required />
+        </div>
+        <div>
+          <label>الهاتف</label>
+          <input name="phone" placeholder="مثال: 0550xxxxxx" required />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>الخدمة</label>
+          <select name="service" required>
+            <option value="">اختر خدمة…</option>
+            <option>توصيل</option>
+            <option>صيانة</option>
+            <option>كراء معدات</option>
+            <option>استشارة</option>
+          </select>
+        </div>
+        <textarea name="note" placeholder="تفاصيل إضافية (اختياري)"></textarea>
+      </form>
+
+      <div class="formActions">
+        <button class="btn btnPrimary" id="sendBtn">إرسال الطلب</button>
+        <button class="btn btnGhost" id="clearBtn" type="button">مسح</button>
+      </div>
+
+      <div id="toast" class="toast"></div>
+
+      <div class="note">
+        * بعد الإرسال سيظهر الطلب مباشرة في <a href="/admin">لوحة الإدارة</a>.
+      </div>
+    </div>
+
+    <footer>© منصة أشير — تصميم حديث متوافق مع الهاتف والويب</footer>
+  </div>
+
+  <script>
+    const form = document.getElementById("orderForm");
+    const sendBtn = document.getElementById("sendBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const toast = document.getElementById("toast");
+
+    function showToast(type, msg){
+      toast.className = "toast " + (type || "");
+      toast.style.display = "block";
+      toast.textContent = msg;
+      setTimeout(() => toast.style.display = "none", 3500);
     }
-    err.style.display = "block";
-  }catch(e){
-    err.style.display = "block";
-  }
-});
-</script>
+
+    clearBtn.addEventListener("click", () => {
+      form.reset();
+      showToast("", "تم مسح البيانات");
+    });
+
+    sendBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const data = new FormData(form);
+      const payload = {
+        name: data.get("name"),
+        phone: data.get("phone"),
+        service: data.get("service") + (data.get("note") ? (" - " + data.get("note")) : "")
+      };
+
+      if(!payload.name || !payload.phone || !payload.service){
+        showToast("err","املأ كل الحقول المطلوبة");
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "جار الإرسال...";
+
+      try{
+        const res = await fetch("/api/order", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if(json.ok){
+          showToast("ok","✅ تم إرسال الطلب بنجاح");
+          form.reset();
+        }else{
+          showToast("err","حدث خطأ أثناء الإرسال");
+        }
+      }catch(err){
+        showToast("err","تعذر الاتصال بالسيرفر");
+      }finally{
+        sendBtn.disabled = false;
+        sendBtn.textContent = "إرسال الطلب";
+      }
+    });
+  </script>
 </body>
-</html>
+            </html>
