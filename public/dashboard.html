@@ -1,93 +1,85 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>لوحة الإدارة - أشير</title>
-
-<style>
-
-body{
-background:#020617;
-color:white;
-font-family:Arial;
-padding:20px;
-}
-
-.box{
-background:#0f172a;
-padding:20px;
-border-radius:10px;
-margin-top:20px;
-}
-
-h2{
-color:#22c55e;
-}
-
-table{
-width:100%;
-margin-top:15px;
-border-collapse:collapse;
-}
-
-td,th{
-padding:10px;
-border-bottom:1px solid #1e293b;
-}
-
-</style>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة إدارة منصة أشير</title>
+  <style>
+    body{margin:0;font-family:system-ui;background:#0b1220;color:#fff}
+    .wrap{max-width:1100px;margin:auto;padding:24px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
+    h1{margin:0 0 10px}
+    .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    a{color:#17c964;text-decoration:none}
+    table{width:100%;border-collapse:collapse;margin-top:12px;overflow:hidden;border-radius:12px}
+    th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,.10);text-align:right}
+    th{background:rgba(0,0,0,.25)}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .muted{color:rgba(255,255,255,.70)}
+    button{padding:10px 14px;border-radius:10px;border:0;background:#17c964;color:#06250f;font-weight:800;cursor:pointer}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <h1>لوحة الإدارة</h1>
+          <div class="muted">تعرض كل الطلبات القادمة من الموقع.</div>
+        </div>
+        <div>
+          <a href="/" target="_blank">الرجوع للموقع</a>
+          &nbsp; | &nbsp;
+          <button onclick="loadOrders()">تحديث</button>
+        </div>
+      </div>
 
-<h2>لوحة إدارة منصة أشير</h2>
-
-<div class="box">
-
-<table>
-
-<thead>
-<tr>
-<th>الاسم</th>
-<th>الهاتف</th>
-<th>الخدمة</th>
-<th>الوقت</th>
-</tr>
-</thead>
-
-<tbody id="orders">
-</tbody>
-
-</table>
-
-</div>
+      <table>
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>الهاتف</th>
+            <th>الخدمة</th>
+            <th>الوقت</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr><td colspan="4">جار التحميل...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 <script>
+  async function loadOrders(){
+    const tbody = document.getElementById("ordersBody");
+    tbody.innerHTML = `<tr><td colspan="4">جار التحميل...</td></tr>`;
 
-fetch("/api/orders")
-.then(res=>res.json())
-.then(data=>{
+    try{
+      const r = await fetch("/api/orders");
+      const orders = await r.json();
 
-let html="";
+      if(!orders.length){
+        tbody.innerHTML = `<tr><td colspan="4">لا توجد طلبات</td></tr>`;
+        return;
+      }
 
-data.forEach(o=>{
+      tbody.innerHTML = orders.slice().reverse().map(o => `
+        <tr>
+          <td>${o.name || ""}</td>
+          <td>${o.phone || ""}</td>
+          <td>${o.service || ""}</td>
+          <td>${o.date || ""}</td>
+        </tr>
+      `).join("");
 
-html+=`
-<tr>
-<td>${o.name}</td>
-<td>${o.phone}</td>
-<td>${o.service}</td>
-<td>${o.date}</td>
-</tr>
-`;
+    }catch(e){
+      tbody.innerHTML = `<tr><td colspan="4">خطأ في جلب الطلبات</td></tr>`;
+    }
+  }
 
-});
-
-document.getElementById("orders").innerHTML=html;
-
-});
-
+  loadOrders();
+  setInterval(loadOrders, 5000);
 </script>
-
 </body>
 </html>
