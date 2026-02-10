@@ -1,17 +1,17 @@
 {
   "name": "ashir-platform",
-  "version": "3.0.0",
-  "description": "Achir Platform V3",
+  "version": "3.0.1",
+  "description": "Achir Platform V3 (Orders + Admin + WhatsApp Cloud API)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "better-sqlite3": "^9.4.0",
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.4.0",
+    "express": "^4.19.2",
     "express-session": "^1.17.3",
-    "nanoid": "^4.0.0",
-    "axios": "^1.6.0"
+    "nanoid": "^4.0.2"
   }
 }
