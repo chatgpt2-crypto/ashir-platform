@@ -1,130 +1,149 @@
-// =============================
-// Achir Platform Server
-// Telegram + WhatsApp Ready
-// =============================
-
 const express = require("express");
-const path = require("path");
+const cookieParser = require("cookie-parser");
+const db = require("./db");
+const { requireAdmin } = require("./auth");
 
 const app = express();
 
-// =============================
-// إعداد Telegram (ضع التوكن)
-// =============================
-const TG_BOT_TOKEN = "8255304129:AAGjw36VLV4mrU_oD9rI3Dxv8AHoEKK_6eg";
-const TG_CHAT_ID = "5993617651";
-
-// =============================
-// رقم WhatsApp
-// =============================
-const WHATSAPP_NUMBER = "213666376417"; // بدون صفر في البداية
-
-// =============================
-// Middleware
-// =============================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static("public"));
 
-// عرض الموقع
-app.use(express.static(path.join(__dirname, "public")));
+const PORT = process.env.PORT || 3000;
 
-// =============================
-// Telegram Function
-// =============================
-async function sendTelegram(text) {
-  try {
-    const fetch = (await import("node-fetch")).default;
+// إعدادات
+const SITE_NAME = process.env.SITE_NAME || "منصة أشير";
+const WHATSAPP_NUMBER = (process.env.WHATSAPP_NUMBER || "213666376417").replace(/\D/g, "");
+const ADMIN_USER = process.env.ADMIN_USER || "admin";
+const ADMIN_PASS = process.env.ADMIN_PASS || "Admin12345!";
 
-    await fetch(
-      `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: TG_CHAT_ID,
-          text: text,
-        }),
-      }
-    );
+// Telegram
+const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN || "";
+const TG_CHAT_ID = process.env.TG_CHAT_ID || "";
 
-    console.log("Telegram sent");
-  } catch (err) {
-    console.log("Telegram error:", err.message);
-  }
+// رابط واتساب مباشر (بدون Meta)
+function waLink(text) {
+  const msg = encodeURIComponent(text);
+  // رقم بدون + وبدون مسافات
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
 }
 
-// =============================
-// Submit Request
-// =============================
-app.post("/api/request", async (req, res) => {
-  const { name, phone, service } = req.body;
+async function sendTelegram(text) {
+  if (!TG_BOT_TOKEN || !TG_CHAT_ID) return { ok: false, skipped: true };
+  const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: TG_CHAT_ID, text })
+  });
+  const j = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data: j };
+}
 
-  const message = `
-طلب جديد من منصة أشير
+// API: قائمة الخدمات
+app.get("/api/services", (req, res) => {
+  const rows = db.prepare("SELECT id,name,price_dzd,active FROM services WHERE active=1 ORDER BY name").all();
+  res.json({ ok: true, services: rows, siteName: SITE_NAME });
+});
 
-الاسم: ${name}
+// API: إنشاء طلب
+app.post("/api/order", async (req, res) => {
+  try {
+    const { customer_name, phone, service_id, note } = req.body || {};
+    if (!customer_name || !phone || !service_id) {
+      return res.status(400).json({ ok: false, error: "missing_fields" });
+    }
+
+    const service = db.prepare("SELECT id,name FROM services WHERE id=? AND active=1").get(service_id);
+    if (!service) return res.status(400).json({ ok: false, error: "invalid_service" });
+
+    const stmt = db.prepare(`
+      INSERT INTO orders (customer_name, phone, service_id, service_name, note)
+      VALUES (?,?,?,?,?)
+    `);
+    const info = stmt.run(
+      String(customer_name).trim(),
+      String(phone).trim(),
+      service.id,
+      service.name,
+      (note || "").trim()
+    );
+
+    const orderId = info.lastInsertRowid;
+
+    const msg =
+`طلب جديد من ${SITE_NAME} ✅
+رقم الطلب: ${orderId}
+الخدمة: ${service.name}
+الاسم: ${customer_name}
 الهاتف: ${phone}
-الخدمة: ${service}
-الوقت: ${new Date().toLocaleString()}
-`;
+ملاحظة: ${note || "-"}`;
 
-  // إرسال Telegram
-  await sendTelegram(message);
+    // إشعار تيليجرام (اختياري)
+    const tg = await sendTelegram(msg);
 
-  // إنشاء رابط WhatsApp
-  const whatsappURL =
-    "https://wa.me/" +
-    WHATSAPP_NUMBER +
-    "?text=" +
-    encodeURIComponent(message);
+    // رابط واتساب للمستخدم/لصاحب المنصة
+    const wa = waLink(msg);
 
-  // إعادة رابط WhatsApp
+    res.json({ ok: true, order_id: orderId, whatsapp_url: wa, telegram: tg });
+  } catch (e) {
+    console.error("ORDER_ERROR:", e);
+    res.status(500).json({ ok: false, error: "server_error" });
+  }
+});
+
+// صفحات الإدارة
+app.get("/admin", requireAdmin, (req, res) => res.sendFile(__dirname + "/public/admin.html"));
+
+app.get("/admin/login", (req, res) => res.send(`
+<!doctype html><html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>دخول الإدارة</title>
+<style>body{font-family:system-ui;background:#0b1220;color:#fff;display:grid;place-items:center;height:100vh;margin:0}
+.card{background:#111a2e;padding:18px;border-radius:12px;width:min(360px,92vw)}
+input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #2b3a5c;background:#0b1220;color:#fff;margin-top:10px}
+button{background:#10b981;border:0;font-weight:700;cursor:pointer}
+small{opacity:.8}</style></head>
+<body><div class="card">
+<h3>تسجيل دخول الإدارة</h3>
+<form method="post" action="/admin/login">
+<input name="user" placeholder="المستخدم" required>
+<input name="pass" placeholder="كلمة المرور" type="password" required>
+<button>دخول</button>
+</form>
+<small>غيّر البيانات من ENV في Render</small>
+</div></body></html>
+`));
+
+app.post("/admin/login", (req, res) => {
+  const { user, pass } = req.body || {};
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    res.cookie("admin", "1", { httpOnly: true, sameSite: "lax" });
+    return res.redirect("/admin");
+  }
+  return res.status(401).send("فشل تسجيل الدخول");
+});
+
+app.post("/admin/logout", (req, res) => {
+  res.clearCookie("admin");
+  res.redirect("/");
+});
+
+// API للإدارة
+app.get("/api/admin/orders", requireAdmin, (req, res) => {
+  const rows = db.prepare("SELECT * FROM orders ORDER BY id DESC LIMIT 200").all();
+  res.json({ ok: true, orders: rows, siteName: SITE_NAME });
+});
+
+app.get("/api/admin/status", requireAdmin, (req, res) => {
   res.json({
-    success: true,
-    whatsapp: whatsappURL,
+    ok: true,
+    telegram: TG_BOT_TOKEN && TG_CHAT_ID ? "مفعل" : "غير مفعل",
+    whatsapp: WHATSAPP_NUMBER ? "مفعل" : "غير مفعل",
+    whatsappNumber: WHATSAPP_NUMBER
   });
 });
 
-// =============================
-// Admin Panel
-// =============================
-app.get("/admin", (req, res) => {
-  res.send(`
-  <html>
-  <head>
-  <title>لوحة الإدارة</title>
-  <style>
-  body{
-    background:#0f172a;
-    color:white;
-    font-family:Arial;
-    padding:30px;
-  }
-  .box{
-    background:#1e293b;
-    padding:20px;
-    border-radius:10px;
-  }
-  </style>
-  </head>
-  <body>
-  <div class="box">
-  <h2>لوحة الإدارة</h2>
-  <p>Telegram مفعل</p>
-  <p>WhatsApp مفعل</p>
-  </div>
-  </body>
-  </html>
-  `);
-});
-
-// =============================
-// تشغيل السيرفر
-// =============================
-const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+  console.log("RUNNING:", PORT);
 });
