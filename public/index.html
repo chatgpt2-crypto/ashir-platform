@@ -1,37 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-<title>Achir Platform</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Achir Platform</title>
+  <style>
+    body{font-family:Arial;margin:0;background:#0b1220;color:#fff}
+    .wrap{max-width:900px;margin:auto;padding:18px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;margin:12px 0}
+    input,button{font:inherit;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff}
+    button{cursor:pointer}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:720px){.row{grid-template-columns:1fr}}
+    a{color:#9ae6b4}
+    .ok{padding:10px;border-radius:12px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.25);margin-top:10px;display:none}
+    .err{padding:10px;border-radius:12px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);margin-top:10px;display:none}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin:0 0 6px">Achir Platform</h1>
+      <p style="opacity:.8;margin:0">إرسال طلب (سيصل للإدارة، وواتساب إذا فعلته)</p>
+      <p style="margin-top:8px"><a href="/admin/login">لوحة الإدارة</a></p>
+    </div>
 
-<h1>Achir Platform</h1>
+    <div class="card">
+      <form id="form">
+        <div class="row">
+          <input id="name" placeholder="الاسم" required />
+          <input id="phone" placeholder="الهاتف" required />
+        </div>
+        <div style="margin-top:10px">
+          <input id="service" placeholder="الخدمة / الطلب" required style="width:100%"/>
+        </div>
 
-<form id="form">
-<input placeholder="الاسم" id="name"/><br>
-<input placeholder="الهاتف" id="phone"/><br>
-<input placeholder="الخدمة" id="service"/><br>
+        <div style="margin-top:10px">
+          <button type="submit">إرسال</button>
+        </div>
 
-<button type="submit">إرسال</button>
-</form>
+        <div class="ok" id="ok">✅ تم إرسال الطلب بنجاح.</div>
+        <div class="err" id="err">❌ حدث خطأ. حاول مرة أخرى.</div>
+      </form>
+    </div>
+  </div>
 
 <script>
-document.getElementById("form").onsubmit=async(e)=>{
-e.preventDefault();
+const form = document.getElementById("form");
+const ok = document.getElementById("ok");
+const err = document.getElementById("err");
 
-await fetch("/api/order",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-name:name.value,
-phone:phone.value,
-service:service.value
-})
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  ok.style.display = "none";
+  err.style.display = "none";
+
+  const payload = {
+    name: document.getElementById("name").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    service: document.getElementById("service").value.trim()
+  };
+
+  try{
+    const r = await fetch("/api/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if(j.ok){
+      ok.style.display = "block";
+      form.reset();
+      return;
+    }
+    err.style.display = "block";
+  }catch(e){
+    err.style.display = "block";
+  }
 });
-
-alert("تم الإرسال");
-};
 </script>
-
 </body>
 </html>
