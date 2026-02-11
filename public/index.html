@@ -2,116 +2,63 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>منصة أشير</title>
-  <style>
-    body{margin:0;font-family:system-ui;background:#0b1220;color:#fff}
-    .wrap{max-width:900px;margin:auto;padding:24px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
-    h1{margin:0 0 6px}
-    p{margin:0 0 14px;color:rgba(255,255,255,.75)}
-    label{display:block;margin:10px 0 6px;color:rgba(255,255,255,.85)}
-    input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;outline:none}
-    textarea{min-height:100px;resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:700px){.row{grid-template-columns:1fr}}
-    .btns{display:flex;gap:10px;justify-content:flex-start;margin-top:12px;flex-wrap:wrap}
-    button,a.btn{padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
-    button{background:#17c964;color:#06250f}
-    a.btn{background:transparent;border:1px solid rgba(255,255,255,.20);color:#fff;text-decoration:none}
-    .small{font-size:13px;color:rgba(255,255,255,.65);margin-top:10px}
-  </style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>منصة أشير</h1>
-      <p>واجهة احترافية لطلب الخدمات — بعد الإرسال سيتم فتح واتساب تلقائياً ✅</p>
+<body style="font-family: system-ui; padding:20px;">
+  <h2>منصة أشير</h2>
 
-      <form id="orderForm">
-        <div class="row">
-          <div>
-            <label>الاسم</label>
-            <input id="name" placeholder="مثال: أحمد" required />
-          </div>
-          <div>
-            <label>الهاتف</label>
-            <input id="phone" placeholder="مثال: 0550xxxxxx" required />
-          </div>
-        </div>
+  <label>الاسم</label><br />
+  <input id="name" style="width:100%;padding:10px" /><br /><br />
 
-        <label>الخدمة</label>
-        <select id="service" required>
-          <option value="">اختر خدمة...</option>
-          <option>خدمات توصيل</option>
-          <option>صيانة وخدمات</option>
-          <option>خدمات فلاحية</option>
-        </select>
+  <label>الهاتف</label><br />
+  <input id="phone" style="width:100%;padding:10px" /><br /><br />
 
-        <label>ملاحظة (اختياري)</label>
-        <textarea id="note" placeholder="اكتب التفاصيل..."></textarea>
+  <label>الخدمة</label><br />
+  <select id="service" style="width:100%;padding:10px">
+    <option>خدمات توصيل</option>
+    <option>صيانة وخدمات</option>
+    <option>خدمات فلاحية</option>
+  </select><br /><br />
 
-        <div class="btns">
-          <button type="submit">إرسال الطلب</button>
-          <a class="btn" href="/dashboard.html" target="_blank">دخول الإدارة</a>
-        </div>
+  <label>ملاحظة (اختياري)</label><br />
+  <textarea id="note" style="width:100%;padding:10px" rows="4"></textarea><br /><br />
 
-        <div class="small">
-          ملاحظة: الطلب يُحفظ في السيرفر ويظهر في لوحة الإدارة + يتم فتح واتساب تلقائياً.
-        </div>
-      </form>
-    </div>
-  </div>
+  <button id="send" style="padding:10px 16px">إرسال الطلب</button>
+
+  <p id="msg" style="margin-top:12px"></p>
 
 <script>
-  const WHATSAPP_NUMBER = "213666376417"; // رقمك دولي بدون +
+document.getElementById("send").addEventListener("click", async () => {
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const service = document.getElementById("service").value.trim();
+  const note = document.getElementById("note").value.trim();
 
-  document.getElementById("orderForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const msgEl = document.getElementById("msg");
+  msgEl.textContent = "جارٍ الإرسال...";
 
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const service = document.getElementById("service").value.trim();
-    const note = document.getElementById("note").value.trim();
+  try {
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, phone, service, note })
+    });
 
-    if (!name || !phone || !service) {
-      alert("يرجى ملء الاسم والهاتف والخدمة");
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      msgEl.textContent = "تعذر حفظ الطلب في السيرفر ❌";
       return;
     }
 
-    // 1) حفظ الطلب في السيرفر
-    let saved = false;
-    try {
-      const r = await fetch("/api/order", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ name, phone, service, note })
-      });
-      const data = await r.json();
-      saved = !!data.success;
-    } catch (err) {
-      saved = false;
-    }
-
-    if (!saved) {
-      alert("تعذر حفظ الطلب في السيرفر ❌ افتح Logs في Render لمعرفة السبب.");
-      return;
-    }
-
-    // 2) فتح واتساب تلقائياً بعد الحفظ
-    const msg =
-      `طلب جديد من منصة أشير\n` +
-      `الاسم: ${name}\n` +
-      `الهاتف: ${phone}\n` +
-      `الخدمة: ${service}\n` +
-      `ملاحظة: ${note || "-"}`;
-
-    const wa = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-    window.open(wa, "_blank");
-
-    e.target.reset();
-    alert("تم إرسال الطلب ✅ ستجده في لوحة الإدارة.");
-  });
+    msgEl.textContent = "تم حفظ الطلب ✅ سيتم فتح واتساب الآن...";
+    // فتح واتساب تلقائيًا
+    window.location.href = data.waLink;
+  } catch (e) {
+    msgEl.textContent = "تعذر الاتصال بالسيرفر ❌";
+  }
+});
 </script>
 </body>
 </html>
