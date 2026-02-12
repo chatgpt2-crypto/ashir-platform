@@ -4,59 +4,88 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>منصة أشير</title>
+  <style>
+    body{font-family:system-ui;background:#07101f;color:#fff;margin:0}
+    .wrap{max-width:900px;margin:40px auto;padding:16px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
+    input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#fff}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+    button{padding:12px 14px;border:0;border-radius:12px;background:#16a34a;color:#fff;font-weight:700;cursor:pointer}
+    a{color:#7dd3fc}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  </style>
 </head>
-<body style="font-family: system-ui; padding:20px;">
-  <h2>منصة أشير</h2>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h2>منصة أشير</h2>
+      <a href="/admin">دخول الإدارة</a>
+    </div>
 
-  <label>الاسم</label><br />
-  <input id="name" style="width:100%;padding:10px" /><br /><br />
+    <div class="card">
+      <h3>طلب خدمة</h3>
+      <form id="f">
+        <div class="grid">
+          <div>
+            <label>الاسم</label>
+            <input name="name" placeholder="مثال: أحمد" required />
+          </div>
+          <div>
+            <label>الهاتف</label>
+            <input name="phone" placeholder="0550xxxxxx" required />
+          </div>
+        </div>
 
-  <label>الهاتف</label><br />
-  <input id="phone" style="width:100%;padding:10px" /><br /><br />
+        <div style="margin-top:12px">
+          <label>الخدمة</label>
+          <select name="service" required>
+            <option value="">اختر خدمة...</option>
+            <option>خدمات توصيل</option>
+            <option>صيانة وخدمات</option>
+            <option>خدمات فلاحية</option>
+          </select>
+        </div>
 
-  <label>الخدمة</label><br />
-  <select id="service" style="width:100%;padding:10px">
-    <option>خدمات توصيل</option>
-    <option>صيانة وخدمات</option>
-    <option>خدمات فلاحية</option>
-  </select><br /><br />
+        <div style="margin-top:12px">
+          <label>ملاحظة (اختياري)</label>
+          <textarea name="note" rows="3" placeholder="اكتب التفاصيل..."></textarea>
+        </div>
 
-  <label>ملاحظة (اختياري)</label><br />
-  <textarea id="note" style="width:100%;padding:10px" rows="4"></textarea><br /><br />
-
-  <button id="send" style="padding:10px 16px">إرسال الطلب</button>
-
-  <p id="msg" style="margin-top:12px"></p>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+          <button type="submit">إرسال الطلب</button>
+          <span id="msg"></span>
+        </div>
+      </form>
+    </div>
+  </div>
 
 <script>
-document.getElementById("send").addEventListener("click", async () => {
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const service = document.getElementById("service").value.trim();
-  const note = document.getElementById("note").value.trim();
+const f = document.getElementById("f");
+const msg = document.getElementById("msg");
 
-  const msgEl = document.getElementById("msg");
-  msgEl.textContent = "جارٍ الإرسال...";
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "جارٍ الإرسال...";
 
-  try {
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, service, note })
+  const formData = new FormData(f);
+  const body = Object.fromEntries(formData.entries());
+
+  try{
+    const r = await fetch("/api/order", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body)
     });
+    const data = await r.json();
+    if(!data.ok) throw new Error(data.message || "فشل");
 
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      msgEl.textContent = "تعذر حفظ الطلب في السيرفر ❌";
-      return;
-    }
-
-    msgEl.textContent = "تم حفظ الطلب ✅ سيتم فتح واتساب الآن...";
-    // فتح واتساب تلقائيًا
-    window.location.href = data.waLink;
-  } catch (e) {
-    msgEl.textContent = "تعذر الاتصال بالسيرفر ❌";
+    msg.textContent = "تم حفظ الطلب ✅ سيتم فتح واتساب...";
+    // فتح واتساب تلقائي
+    window.open(data.waLink, "_blank");
+    f.reset();
+  }catch(err){
+    msg.textContent = "❌ تعذر حفظ الطلب في السيرفر";
   }
 });
 </script>
