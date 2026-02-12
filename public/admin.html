@@ -1,81 +1,90 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>دخول الإدارة</title>
-
-<style>
-body{
-background:#020617;
-color:white;
-font-family:Arial;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.box{
-background:#0f172a;
-padding:30px;
-border-radius:10px;
-width:300px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin-top:10px;
-background:#020617;
-border:none;
-color:white;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:15px;
-background:#22c55e;
-border:none;
-color:white;
-cursor:pointer;
-}
-</style>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>لوحة الإدارة</title>
+  <style>
+    body{font-family:system-ui;background:#07101f;color:#fff;margin:0}
+    .wrap{max-width:1000px;margin:40px auto;padding:16px}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:right}
+    a{color:#7dd3fc}
+    .muted{opacity:.8}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="top">
+      <h2>لوحة إدارة منصة أشير</h2>
+      <div>
+        <a href="/">الرجوع للموقع</a>
+        <span class="muted"> | </span>
+        <a href="/logout">تسجيل خروج</a>
+      </div>
+    </div>
 
-<div class="box">
-
-<h3>تسجيل دخول الإدارة</h3>
-
-<input id="user" placeholder="اسم المستخدم">
-<input id="pass" placeholder="كلمة المرور" type="password">
-
-<button onclick="login()">دخول</button>
-
-</div>
+    <div class="card">
+      <h3>الطلبات</h3>
+      <div id="status" class="muted">تحميل...</div>
+      <div style="overflow:auto;margin-top:10px">
+        <table>
+          <thead>
+            <tr>
+              <th>الوقت</th>
+              <th>الاسم</th>
+              <th>الهاتف</th>
+              <th>الخدمة</th>
+              <th>ملاحظة</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 <script>
+async function load(){
+  const status = document.getElementById("status");
+  const rows = document.getElementById("rows");
+  status.textContent = "تحميل...";
 
-function login(){
+  try{
+    const r = await fetch("/admin/api/orders");
+    const data = await r.json();
+    if(!data.ok) throw 0;
 
-let u=document.getElementById("user").value;
-let p=document.getElementById("pass").value;
+    rows.innerHTML = "";
+    if(!data.orders.length){
+      status.textContent = "لا توجد طلبات.";
+      return;
+    }
+    status.textContent = `عدد الطلبات: ${data.orders.length}`;
 
-if(u==="admin" && p==="123456"){
-
-window.location="/dashboard.html";
-
-}else{
-
-alert("بيانات غير صحيحة");
-
+    for(const o of data.orders){
+      const tr = document.createElement("tr");
+      const t = new Date(o.createdAt).toLocaleString("ar-DZ");
+      tr.innerHTML = `
+        <td>${t}</td>
+        <td>${escapeHtml(o.name)}</td>
+        <td>${escapeHtml(o.phone)}</td>
+        <td>${escapeHtml(o.service)}</td>
+        <td>${escapeHtml(o.note || "-")}</td>
+      `;
+      rows.appendChild(tr);
+    }
+  }catch(e){
+    status.textContent = "تعذر تحميل الطلبات.";
+  }
 }
-
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-
+load();
+setInterval(load, 5000);
 </script>
-
 </body>
 </html>
