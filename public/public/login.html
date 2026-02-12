@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تسجيل دخول الإدارة</title>
+  <style>
+    body{font-family:system-ui;background:#07101f;color:#fff;margin:0}
+    .wrap{max-width:520px;margin:60px auto;padding:16px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
+    input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#fff}
+    button{padding:12px 14px;border:0;border-radius:12px;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;width:100%}
+    .err{color:#fca5a5;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>تسجيل الدخول</h2>
+      <form method="POST" action="/login">
+        <label>الإيميل</label>
+        <input name="email" placeholder="admin@example.com" required />
+        <div style="height:10px"></div>
+        <label>كلمة المرور</label>
+        <input name="password" type="password" placeholder="••••••••" required />
+        <div style="height:12px"></div>
+        <button type="submit">دخول</button>
+      </form>
+      <div id="err" class="err" style="display:none">بيانات الدخول غير صحيحة</div>
+    </div>
+  </div>
+
+<script>
+const u = new URL(location.href);
+if (u.searchParams.get("err") === "1") document.getElementById("err").style.display="block";
+</script>
+</body>
+</html>
