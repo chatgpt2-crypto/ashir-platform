@@ -1,39 +1,38 @@
-async function loadServices() {
-  const r = await fetch("/api/services");
-  const j = await r.json();
-  document.getElementById("title").textContent = j.siteName || "Achir Platform";
+const form = document.getElementById("orderForm");
+const msg = document.getElementById("msg");
 
-  const sel = document.getElementById("services");
-  sel.innerHTML = "";
-  j.services.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s.id;
-    opt.textContent = s.name;
-    sel.appendChild(opt);
-  });
-}
-
-document.getElementById("orderForm").addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const msg = document.getElementById("msg");
-  msg.textContent = "جار الإرسال...";
+  msg.textContent = "";
+  msg.className = "msg";
 
-  const fd = new FormData(e.target);
-  const body = Object.fromEntries(fd.entries());
+  const fd = new FormData(form);
+  const payload = Object.fromEntries(fd.entries());
 
-  const r = await fetch("/api/order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
+  try {
+    const res = await fetch("/api/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
 
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.ok) {
-    msg.textContent = "تعذر الإرسال بالسيرفر";
-    return;
+    if (!data.ok) {
+      msg.textContent = "تعذر حفظ الطلب في السيرفر ❌";
+      msg.classList.add("err");
+      return;
+    }
+
+    msg.textContent = "تم حفظ الطلب ✅ سيتم فتح واتساب الآن...";
+    msg.classList.add("ok");
+
+    setTimeout(() => {
+      window.open(data.waLink, "_blank");
+      form.reset();
+    }, 700);
+
+  } catch (err) {
+    msg.textContent = "تعذر الاتصال بالسيرفر ❌";
+    msg.classList.add("err");
   }
-
-  msg.innerHTML = `تم ✅ رقم الطلب: ${j.order_id} — <a href="${j.whatsapp_url}" target="_blank">فتح واتساب</a>`;
 });
-
-loadServices();
