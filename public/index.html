@@ -2,92 +2,81 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>منصة أشير</title>
-  <style>
-    body{font-family:system-ui;background:#07101f;color:#fff;margin:0}
-    .wrap{max-width:900px;margin:40px auto;padding:16px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
-    input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#fff}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:700px){.grid{grid-template-columns:1fr}}
-    button{padding:12px 14px;border:0;border-radius:12px;background:#16a34a;color:#fff;font-weight:700;cursor:pointer}
-    a{color:#7dd3fc}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <h2>منصة أشير</h2>
-      <a href="/admin">دخول الإدارة</a>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <div class="title">منصة أشير</div>
+        <div class="subtitle">حلول طلب الخدمات بسرعة</div>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>طلب خدمة</h3>
-      <form id="f">
-        <div class="grid">
-          <div>
+    <nav class="nav">
+      <a href="/admin.html" class="btn ghost">دخول الإدارة</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero card">
+      <div class="hero-left">
+        <div class="badge">⚡ تفعيل سريع - واتساب + تيليجرام</div>
+        <h1>واجهة احترافية لطلب الخدمات في منصة أشير</h1>
+        <p class="muted">
+          بعد الإرسال يظهر الطلب في لوحة الإدارة، ويُفتح واتساب تلقائياً لإرسال الطلب، ويمكن تفعيل تيليجرام أيضاً.
+        </p>
+      </div>
+    </section>
+
+    <section class="card form-card">
+      <h2>طلب خدمة</h2>
+
+      <form id="orderForm" class="form">
+        <div class="row">
+          <div class="field">
             <label>الاسم</label>
             <input name="name" placeholder="مثال: أحمد" required />
           </div>
-          <div>
+
+          <div class="field">
             <label>الهاتف</label>
             <input name="phone" placeholder="0550xxxxxx" required />
           </div>
+
+          <div class="field">
+            <label>الخدمة</label>
+            <select name="service" required>
+              <option value="">اختر خدمة...</option>
+              <option>خدمات توصيل</option>
+              <option>صيانة وخدمات</option>
+              <option>خدمات فلاحية</option>
+            </select>
+          </div>
         </div>
 
-        <div style="margin-top:12px">
-          <label>الخدمة</label>
-          <select name="service" required>
-            <option value="">اختر خدمة...</option>
-            <option>خدمات توصيل</option>
-            <option>صيانة وخدمات</option>
-            <option>خدمات فلاحية</option>
-          </select>
+        <div class="field">
+          <label>تفاصيل إضافية (اختياري)</label>
+          <textarea name="notes" rows="4" placeholder="اكتب التفاصيل..."></textarea>
         </div>
 
-        <div style="margin-top:12px">
-          <label>ملاحظة (اختياري)</label>
-          <textarea name="note" rows="3" placeholder="اكتب التفاصيل..."></textarea>
+        <div class="actions">
+          <button type="reset" class="btn ghost">مسح</button>
+          <button type="submit" class="btn">إرسال الطلب</button>
         </div>
 
-        <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
-          <button type="submit">إرسال الطلب</button>
-          <span id="msg"></span>
-        </div>
+        <div id="msg" class="msg"></div>
       </form>
-    </div>
-  </div>
 
-<script>
-const f = document.getElementById("f");
-const msg = document.getElementById("msg");
+      <p class="foot muted">بعد الإرسال ستفتح نافذة واتساب تلقائياً.</p>
+    </section>
+  </main>
 
-f.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "جارٍ الإرسال...";
-
-  const formData = new FormData(f);
-  const body = Object.fromEntries(formData.entries());
-
-  try{
-    const r = await fetch("/api/order", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(body)
-    });
-    const data = await r.json();
-    if(!data.ok) throw new Error(data.message || "فشل");
-
-    msg.textContent = "تم حفظ الطلب ✅ سيتم فتح واتساب...";
-    // فتح واتساب تلقائي
-    window.open(data.waLink, "_blank");
-    f.reset();
-  }catch(err){
-    msg.textContent = "❌ تعذر حفظ الطلب في السيرفر";
-  }
-});
-</script>
+  <script src="/app.js"></script>
 </body>
 </html>
