@@ -2,89 +2,59 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>لوحة الإدارة</title>
-  <style>
-    body{font-family:system-ui;background:#07101f;color:#fff;margin:0}
-    .wrap{max-width:1000px;margin:40px auto;padding:16px}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:18px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:right}
-    a{color:#7dd3fc}
-    .muted{opacity:.8}
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <h2>لوحة إدارة منصة أشير</h2>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
       <div>
-        <a href="/">الرجوع للموقع</a>
-        <span class="muted"> | </span>
-        <a href="/logout">تسجيل خروج</a>
+        <div class="title">لوحة الإدارة</div>
+        <div class="subtitle">طلبات منصة أشير</div>
       </div>
     </div>
 
-    <div class="card">
-      <h3>الطلبات</h3>
-      <div id="status" class="muted">تحميل...</div>
-      <div style="overflow:auto;margin-top:10px">
-        <table>
+    <nav class="nav">
+      <a href="/" class="btn ghost">الرجوع للموقع</a>
+      <button id="refreshBtn" class="btn ghost">تحديث</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row-between">
+        <h2>الطلبات</h2>
+        <div id="status" class="muted"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
           <thead>
             <tr>
               <th>الوقت</th>
-              <th>الاسم</th>
-              <th>الهاتف</th>
               <th>الخدمة</th>
+              <th>الهاتف</th>
+              <th>الاسم</th>
               <th>ملاحظة</th>
+              <th>حذف</th>
             </tr>
           </thead>
-          <tbody id="rows"></tbody>
+          <tbody id="ordersBody">
+            <tr><td colspan="6" class="muted">جاري التحميل...</td></tr>
+          </tbody>
         </table>
       </div>
-    </div>
-  </div>
 
-<script>
-async function load(){
-  const status = document.getElementById("status");
-  const rows = document.getElementById("rows");
-  status.textContent = "تحميل...";
+      <p class="muted small">
+        عند فتح هذه الصفحة سيطلب المتصفح اسم مستخدم وكلمة مرور (Basic Auth).
+      </p>
+    </section>
+  </main>
 
-  try{
-    const r = await fetch("/admin/api/orders");
-    const data = await r.json();
-    if(!data.ok) throw 0;
-
-    rows.innerHTML = "";
-    if(!data.orders.length){
-      status.textContent = "لا توجد طلبات.";
-      return;
-    }
-    status.textContent = `عدد الطلبات: ${data.orders.length}`;
-
-    for(const o of data.orders){
-      const tr = document.createElement("tr");
-      const t = new Date(o.createdAt).toLocaleString("ar-DZ");
-      tr.innerHTML = `
-        <td>${t}</td>
-        <td>${escapeHtml(o.name)}</td>
-        <td>${escapeHtml(o.phone)}</td>
-        <td>${escapeHtml(o.service)}</td>
-        <td>${escapeHtml(o.note || "-")}</td>
-      `;
-      rows.appendChild(tr);
-    }
-  }catch(e){
-    status.textContent = "تعذر تحميل الطلبات.";
-  }
-}
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-load();
-setInterval(load, 5000);
-</script>
+  <script src="/admin.js"></script>
 </body>
 </html>
