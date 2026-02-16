@@ -1,157 +1,64 @@
 const express = require("express");
-const path = require("path");
 const fs = require("fs");
+const path = require("path");
+const bodyParser = require("body-parser");
 
 const app = express();
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-// ====== ENV ======
-const PORT = process.env.PORT || 3000;
+app.use(bodyParser.json());
+app.use(express.static("public"));
 
-const ADMIN_USER = process.env.ADMIN_USER || "admin";
-const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+const DATA = path.join(__dirname,"orders.json");
 
-const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || "213666376417";
-
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
-
-// ====== Storage (File) ======
-const DATA_DIR = path.join(__dirname, "data");
-const DATA_FILE = path.join(DATA_DIR, "orders.json");
-
-function ensureDataFile() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]", "utf8");
+if(!fs.existsSync(DATA)){
+fs.writeFileSync(DATA,"[]");
 }
 
-function loadOrders() {
-  try {
-    ensureDataFile();
-    const raw = fs.readFileSync(DATA_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    return [];
-  }
+function read(){
+return JSON.parse(fs.readFileSync(DATA));
 }
 
-function saveOrders(list) {
-  try {
-    ensureDataFile();
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), "utf8");
-  } catch (e) {
-    console.error("Failed to save orders:", e.message);
-  }
+function save(data){
+fs.writeFileSync(DATA,JSON.stringify(data,null,2));
 }
 
-let orders = loadOrders();
+app.post("/api/order",(req,res)=>{
 
-// ====== Auth (Basic) ======
-function basicAuth(req, res, next) {
-  const header = req.headers.authorization || "";
-  if (!header.startsWith("Basic ")) {
-    res.set("WWW-Authenticate", 'Basic realm="Admin Panel"');
-    return res.status(401).send("Auth required");
-  }
+const orders = read();
 
-  const base64 = header.split(" ")[1];
-  const decoded = Buffer.from(base64, "base64").toString("utf8");
-  const [user, pass] = decoded.split(":");
+const order = {
+id:Date.now().toString(),
+date:new Date(),
+name:req.body.name,
+phone:req.body.phone,
+service:req.body.service,
+note:req.body.note
+};
 
-  if (user === ADMIN_USER && pass === ADMIN_PASS) return next();
+orders.push(order);
 
-  res.set("WWW-Authenticate", 'Basic realm="Admin Panel"');
-  return res.status(401).send("Invalid credentials");
-}
+save(orders);
 
-// ====== Routes ======
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+res.json({ok:true});
+
 });
 
-// لوحة الإدارة
-app.get("/admin", (req, res) => {
-  res.redirect("/admin.html");
+app.get("/api/orders",(req,res)=>{
+res.json(read());
 });
 
-// إنشاء طلب
-app.post("/api/order", async (req, res) => {
-  try {
-    const { name, phone, service, notes } = req.body || {};
+app.delete("/api/orders/:id",(req,res)=>{
 
-    if (!name || !phone || !service) {
-      return res.status(400).json({ ok: false, error: "Missing fields" });
-    }
+let orders = read();
 
-    const order = {
-      id: Date.now().toString(),
-      name: String(name).trim(),
-      phone: String(phone).trim(),
-      service: String(service).trim(),
-      notes: String(notes || "").trim(),
-      time: new Date().toISOString()
-    };
+orders = orders.filter(o=>o.id!=req.params.id);
 
-    orders.unshift(order);
-    saveOrders(orders);
+save(orders);
 
-    // رسالة واتساب (بدون Meta API — مجرد فتح رابط واتساب)
-    const waText =
-      `طلب جديد من منصة أشير:%0A` +
-      `الاسم: ${encodeURIComponent(order.name)}%0A` +
-      `الهاتف: ${encodeURIComponent(order.phone)}%0A` +
-      `الخدمة: ${encodeURIComponent(order.service)}%0A` +
-      `ملاحظة: ${encodeURIComponent(order.notes || "-")}%0A` +
-      `الوقت: ${encodeURIComponent(order.time)}`;
+res.json({ok:true});
 
-    const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
-
-    // تيليجرام (اختياري)
-    if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
-      try {
-        const msg =
-          `📩 طلب جديد من منصة أشير\n` +
-          `👤 الاسم: ${order.name}\n` +
-          `📞 الهاتف: ${order.phone}\n` +
-          `🛠 الخدمة: ${order.service}\n` +
-          `📝 ملاحظة: ${order.notes || "-"}\n` +
-          `⏰ الوقت: ${order.time}`;
-
-        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-        await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg })
-        });
-      } catch (e) {
-        console.error("Telegram send failed:", e.message);
-      }
-    }
-
-    return res.json({ ok: true, order, waLink });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
 });
 
-// عرض الطلبات (محمي)
-app.get("/api/orders", basicAuth, (req, res) => {
-  return res.json({ ok: true, orders });
-});
-
-// حذف طلب (محمي)
-app.delete("/api/orders/:id", basicAuth, (req, res) => {
-  const { id } = req.params;
-  const before = orders.length;
-  orders = orders.filter((o) => o.id !== id);
-  if (orders.length !== before) saveOrders(orders);
-  return res.json({ ok: true });
-});
-
-app.listen(PORT, () => {
-  console.log("==> Your service is live 🎉");
-  console.log("==> Available at your primary URL");
+app.listen(3000,()=>{
+console.log("Server running");
 });
