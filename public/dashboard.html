@@ -1,58 +1,140 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>لوحة الإدارة - منصة أشير</title>
-</head>
-<body style="font-family: system-ui; padding:20px;">
-  <h2>لوحة الإدارة</h2>
-  <p>افتحها من: <b>/admin</b></p>
+<meta charset="UTF-8">
+<title>لوحة الإدارة - منصة أشير</title>
 
-  <table border="1" cellpadding="8" style="border-collapse:collapse; width:100%">
-    <thead>
-      <tr>
-        <th>الوقت</th>
-        <th>الاسم</th>
-        <th>الهاتف</th>
-        <th>الخدمة</th>
-        <th>ملاحظة</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
+<style>
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+padding:20px;
+}
+
+h1{
+color:#22c55e;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:#1e293b;
+border-radius:10px;
+overflow:hidden;
+}
+
+th,td{
+padding:10px;
+border-bottom:1px solid #334155;
+text-align:center;
+}
+
+button{
+padding:6px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.delete{
+background:#ef4444;
+color:white;
+}
+
+.whatsapp{
+background:#22c55e;
+color:white;
+}
+</style>
+
+</head>
+<body>
+
+<h1>لوحة إدارة منصة أشير</h1>
+
+<p>عدد الطلبات: <span id="count">0</span></p>
+
+<table>
+<thead>
+<tr>
+<th>الوقت</th>
+<th>الاسم</th>
+<th>الهاتف</th>
+<th>الخدمة</th>
+<th>ملاحظة</th>
+<th>واتساب</th>
+<th>حذف</th>
+</tr>
+</thead>
+
+<tbody id="orders"></tbody>
+
+</table>
 
 <script>
-async function loadOrders() {
-  const res = await fetch("/api/admin/orders");
-  const data = await res.json();
-  const rows = document.getElementById("rows");
-  rows.innerHTML = "";
 
-  if (!data.ok) {
-    rows.innerHTML = "<tr><td colspan='5'>خطأ في جلب الطلبات</td></tr>";
-    return;
-  }
+async function load(){
 
-  if (!data.orders.length) {
-    rows.innerHTML = "<tr><td colspan='5'>لا توجد طلبات</td></tr>";
-    return;
-  }
+const res = await fetch("/api/orders");
+const data = await res.json();
 
-  data.orders.forEach(o => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${o.createdAt}</td>
-      <td>${o.name}</td>
-      <td>${o.phone}</td>
-      <td>${o.service}</td>
-      <td>${o.note || ""}</td>
-    `;
-    rows.appendChild(tr);
-  });
+document.getElementById("count").innerText = data.length;
+
+let html="";
+
+data.reverse().forEach(o=>{
+
+html+=`
+<tr>
+
+<td>${new Date(o.date).toLocaleString()}</td>
+
+<td>${o.name}</td>
+
+<td>${o.phone}</td>
+
+<td>${o.service}</td>
+
+<td>${o.note||""}</td>
+
+<td>
+<a href="https://wa.me/${o.phone}" target="_blank">
+<button class="whatsapp">فتح</button>
+</a>
+</td>
+
+<td>
+<button class="delete"
+onclick="remove('${o.id}')">
+حذف
+</button>
+</td>
+
+</tr>
+`;
+
+});
+
+document.getElementById("orders").innerHTML=html;
+
 }
-loadOrders();
-setInterval(loadOrders, 5000);
+
+async function remove(id){
+
+await fetch("/api/orders/"+id,{
+method:"DELETE"
+});
+
+load();
+
+}
+
+load();
+
+setInterval(load,3000);
+
 </script>
+
 </body>
 </html>
